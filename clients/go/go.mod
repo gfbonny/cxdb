@@ -1,4 +1,4 @@
-module github.com/strongdm/cxdb/clients/go
+module github.com/strongdm/ai-cxdb/clients/go
 
 go 1.22
 

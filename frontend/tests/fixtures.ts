@@ -1,0 +1,145 @@
+// Copyright 2025 StrongDM Inc
+// SPDX-License-Identifier: Apache-2.0
+
+import { test as base, Page } from '@playwright/test';
+import { startServer, stopServer, ServerHandle } from './utils/server';
+import {
+  createContext,
+  appendTurn,
+  getLastTurns,
+  forkContext,
+  CreateContextResult,
+  AppendTurnResult,
+} from './utils/writer';
+import { putBundle, defaultBundle, RegistryBundle } from './utils/registry';
+
+/**
+ * GoWriter helper interface for fixtures.
+ */
+export interface GoWriterHelper {
+  createContext(baseTurnId?: number): CreateContextResult;
+  appendTurn(
+    contextId: number,
+    role: string,
+    text: string,
+    options?: { parentId?: number; typeId?: string; typeVersion?: number }
+  ): AppendTurnResult;
+  getLastTurns(contextId: number, limit?: number): string;
+  forkContext(baseTurnId: number): CreateContextResult;
+}
+
+/**
+ * Registry helper interface for fixtures.
+ */
+export interface RegistryHelper {
+  putBundle(bundleId: string, bundle?: RegistryBundle): Promise<Response>;
+  defaultBundle(): RegistryBundle;
+}
+
+/**
+ * Extended test fixtures.
+ */
+type TestFixtures = {
+  cxdbServer: ServerHandle;
+  goWriter: GoWriterHelper;
+  registry: RegistryHelper;
+  serverHttpUrl: string;
+  apiPage: Page;
+};
+
+/**
+ * Create the extended test with CXDB fixtures.
+ */
+export const test = base.extend<TestFixtures>({
+  /**
+   * CXDB Server fixture.
+   * Spawns a fresh server instance for each test with temp data directory.
+   */
+  cxdbServer: async ({}, use) => {
+    const handle = await startServer();
+    await use(handle);
+    stopServer(handle);
+  },
+
+  /**
+   * Server HTTP URL derived from the cxdbServer fixture.
+   */
+  serverHttpUrl: async ({ cxdbServer }, use) => {
+    await use(`http://127.0.0.1:${cxdbServer.httpPort}`);
+  },
+
+  /**
+   * Go Writer helper fixture.
+   * Provides methods to interact with CXDB via the Go CLI.
+   */
+  goWriter: async ({ cxdbServer }, use) => {
+    const binaryAddr = `127.0.0.1:${cxdbServer.binaryPort}`;
+
+    const helper: GoWriterHelper = {
+      createContext(baseTurnId = 0) {
+        return createContext(binaryAddr, baseTurnId);
+      },
+      appendTurn(contextId, role, text, options = {}) {
+        return appendTurn(binaryAddr, contextId, role, text, options);
+      },
+      getLastTurns(contextId, limit = 10) {
+        return getLastTurns(binaryAddr, contextId, limit);
+      },
+      forkContext(baseTurnId) {
+        return forkContext(binaryAddr, baseTurnId);
+      },
+    };
+
+    await use(helper);
+  },
+
+  /**
+   * Registry helper fixture.
+   * Provides methods to manage type registry bundles.
+   */
+  registry: async ({ cxdbServer }, use) => {
+    const baseUrl = `http://127.0.0.1:${cxdbServer.httpPort}`;
+
+    const helper: RegistryHelper = {
+      async putBundle(bundleId, bundle = defaultBundle()) {
+        return putBundle(baseUrl, bundleId, bundle);
+      },
+      defaultBundle() {
+        return defaultBundle();
+      },
+    };
+
+    await use(helper);
+  },
+
+  /**
+   * Page fixture with API routes intercepted and redirected to the test server.
+   * Use this instead of the built-in `page` fixture for tests that need API access.
+   */
+  apiPage: async ({ page, cxdbServer }, use) => {
+    // Intercept all /v1/* requests and redirect them to the test server
+    await page.route('**/v1/**', async (route) => {
+      const url = route.request().url();
+      // Replace the origin with the test server
+      const testUrl = url.replace(/http:\/\/[^\/]+\/v1/, `http://127.0.0.1:${cxdbServer.httpPort}/v1`);
+
+      // Fetch from the test server
+      const response = await fetch(testUrl, {
+        method: route.request().method(),
+        headers: route.request().headers(),
+        body: route.request().postData() || undefined,
+      });
+
+      // Return the response to the page
+      await route.fulfill({
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: Buffer.from(await response.arrayBuffer()),
+      });
+    });
+
+    await use(page);
+  },
+});
+
+export { expect } from '@playwright/test';
