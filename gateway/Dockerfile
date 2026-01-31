@@ -54,8 +54,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
-RUN useradd -r -u 65532 -g nogroup nonroot
+# Create non-root user and data directory
+RUN useradd -r -u 65532 -g nogroup nonroot && \
+    mkdir -p /data /app && \
+    chown -R 65532:nogroup /data /app
+
 USER nonroot
 
 WORKDIR /app
