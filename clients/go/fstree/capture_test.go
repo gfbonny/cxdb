@@ -14,10 +14,10 @@ func TestCapture_BasicTree(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	// Create files and directories
-	os.MkdirAll(filepath.Join(tmpDir, "src"), 0755)
-	os.WriteFile(filepath.Join(tmpDir, "README.md"), []byte("# Test"), 0644)
-	os.WriteFile(filepath.Join(tmpDir, "src", "main.go"), []byte("package main"), 0644)
-	os.WriteFile(filepath.Join(tmpDir, "src", "lib.go"), []byte("package main\n\nfunc foo() {}"), 0644)
+	_ = os.MkdirAll(filepath.Join(tmpDir, "src"), 0755)
+	_ = os.WriteFile(filepath.Join(tmpDir, "README.md"), []byte("# Test"), 0644)
+	_ = os.WriteFile(filepath.Join(tmpDir, "src", "main.go"), []byte("package main"), 0644)
+	_ = os.WriteFile(filepath.Join(tmpDir, "src", "lib.go"), []byte("package main\n\nfunc foo() {}"), 0644)
 
 	// Capture
 	snap, err := Capture(tmpDir)
@@ -91,10 +91,10 @@ func TestCapture_ContentAddressing(t *testing.T) {
 func TestCapture_ExcludePatterns(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	os.MkdirAll(filepath.Join(tmpDir, "node_modules", "pkg"), 0755)
-	os.WriteFile(filepath.Join(tmpDir, "main.js"), []byte("console.log('hi')"), 0644)
-	os.WriteFile(filepath.Join(tmpDir, "debug.log"), []byte("debug info"), 0644)
-	os.WriteFile(filepath.Join(tmpDir, "node_modules", "pkg", "index.js"), []byte("module"), 0644)
+	_ = os.MkdirAll(filepath.Join(tmpDir, "node_modules", "pkg"), 0755)
+	_ = os.WriteFile(filepath.Join(tmpDir, "main.js"), []byte("console.log('hi')"), 0644)
+	_ = os.WriteFile(filepath.Join(tmpDir, "debug.log"), []byte("debug info"), 0644)
+	_ = os.WriteFile(filepath.Join(tmpDir, "node_modules", "pkg", "index.js"), []byte("module"), 0644)
 
 	snap, err := Capture(tmpDir, WithExclude("*.log", "node_modules"))
 	if err != nil {
@@ -111,8 +111,8 @@ func TestCapture_Symlinks(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	// Create a file and symlink to it
-	os.WriteFile(filepath.Join(tmpDir, "target.txt"), []byte("target content"), 0644)
-	os.Symlink("target.txt", filepath.Join(tmpDir, "link.txt"))
+	_ = os.WriteFile(filepath.Join(tmpDir, "target.txt"), []byte("target content"), 0644)
+	_ = os.Symlink("target.txt", filepath.Join(tmpDir, "link.txt"))
 
 	snap, err := Capture(tmpDir)
 	if err != nil {
@@ -199,8 +199,8 @@ func TestSnapshot_Diff(t *testing.T) {
 func TestSnapshot_GetFileAtPath(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	os.MkdirAll(filepath.Join(tmpDir, "src", "pkg"), 0755)
-	os.WriteFile(filepath.Join(tmpDir, "src", "pkg", "main.go"), []byte("package main"), 0644)
+	_ = os.MkdirAll(filepath.Join(tmpDir, "src", "pkg"), 0755)
+	_ = os.WriteFile(filepath.Join(tmpDir, "src", "pkg", "main.go"), []byte("package main"), 0644)
 
 	snap, err := Capture(tmpDir)
 	if err != nil {

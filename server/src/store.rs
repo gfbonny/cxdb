@@ -183,6 +183,7 @@ impl Store {
     /// Append a turn to a context.
     ///
     /// Returns the turn record and, if this is the first turn (depth=0), the extracted metadata.
+    #[allow(clippy::too_many_arguments)]
     pub fn append_turn(
         &mut self,
         context_id: u64,

@@ -27,8 +27,8 @@ use cxdb_server::store::Store;
 
 fn main() -> Result<()> {
     // Create tokio runtime for async S3 operations
-    let rt = tokio::runtime::Runtime::new()
-        .map_err(|e| StoreError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+    let rt =
+        tokio::runtime::Runtime::new().map_err(|e| StoreError::Io(std::io::Error::other(e)))?;
 
     let config = Config::from_env();
     std::fs::create_dir_all(&config.data_dir)?;

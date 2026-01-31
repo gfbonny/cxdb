@@ -413,6 +413,7 @@ impl<'a> Lexer<'a> {
 }
 
 /// Parser for CQL queries.
+#[derive(Default)]
 pub struct Parser {
     tokens: Vec<Token>,
     pos: usize,
@@ -477,7 +478,7 @@ impl Parser {
         if !matches!(self.current().token_type, TokenType::Eof) {
             return Err(CqlError {
                 error_type: CqlErrorType::SyntaxError,
-                message: format!("Unexpected token after expression"),
+                message: "Unexpected token after expression".to_string(),
                 position: Some(self.current().position),
                 field: None,
             });
@@ -553,7 +554,7 @@ impl Parser {
             _ => {
                 return Err(CqlError {
                     error_type: CqlErrorType::SyntaxError,
-                    message: format!("Expected field name"),
+                    message: "Expected field name".to_string(),
                     position: Some(field_token.position),
                     field: None,
                 });

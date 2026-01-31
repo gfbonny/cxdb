@@ -35,14 +35,14 @@ WORKDIR /app
 # Copy Cargo files first for dependency caching
 COPY Cargo.toml Cargo.lock* ./
 COPY server/Cargo.toml ./server/
-COPY clients/rust/cxdb/Cargo.toml ./clients/rust/cxdb/
+COPY clients/rust/Cargo.toml ./clients/rust/
 
 # Create dummy sources to build dependencies
-RUN mkdir -p server/src clients/rust/cxdb/src && \
+RUN mkdir -p server/src clients/rust/src && \
     echo "fn main() {}" > server/src/main.rs && \
-    echo "pub fn dummy() {}" > clients/rust/cxdb/src/lib.rs && \
+    echo "pub fn dummy() {}" > clients/rust/src/lib.rs && \
     cargo build --release --manifest-path server/Cargo.toml && \
-    rm -rf server/src clients/rust/cxdb/src
+    rm -rf server/src clients/rust/src
 
 # Copy actual source and build
 COPY server/ ./server/

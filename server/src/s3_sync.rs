@@ -106,7 +106,7 @@ impl SyncState {
     fn save(&self, data_dir: &Path) -> Result<()> {
         let path = data_dir.join("sync_state.json");
         let json = serde_json::to_string_pretty(self)
-            .map_err(|e| StoreError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+            .map_err(|e| StoreError::Io(std::io::Error::other(e)))?;
         fs::write(&path, json)?;
         Ok(())
     }
@@ -363,7 +363,7 @@ impl S3Sync {
             .prefix(&prefix)
             .send()
             .await
-            .map_err(|e| StoreError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+            .map_err(|e| StoreError::Io(std::io::Error::other(e)))?;
 
         if let Some(contents) = resp.contents {
             for obj in contents {
@@ -421,7 +421,7 @@ impl S3Sync {
                     .body
                     .collect()
                     .await
-                    .map_err(|e| StoreError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?
+                    .map_err(|e| StoreError::Io(std::io::Error::other(e)))?
                     .into_bytes();
 
                 let manifest: S3Manifest = serde_json::from_slice(&bytes)
@@ -434,10 +434,9 @@ impl S3Sync {
                 if service_err.is_no_such_key() {
                     Ok(None)
                 } else {
-                    Err(StoreError::Io(std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        format!("S3 get failed: {service_err}"),
-                    )))
+                    Err(StoreError::Io(std::io::Error::other(format!(
+                        "S3 get failed: {service_err}"
+                    ))))
                 }
             }
         }
@@ -454,7 +453,7 @@ impl S3Sync {
         };
 
         let json = serde_json::to_vec_pretty(&manifest)
-            .map_err(|e| StoreError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?;
+            .map_err(|e| StoreError::Io(std::io::Error::other(e)))?;
 
         let key = self.s3_key("sync_manifest.json");
 
@@ -467,10 +466,9 @@ impl S3Sync {
             .send()
             .await
             .map_err(|e| {
-                StoreError::Io(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("S3 put manifest failed: {e}"),
-                ))
+                StoreError::Io(std::io::Error::other(format!(
+                    "S3 put manifest failed: {e}"
+                )))
             })?;
 
         Ok(())
@@ -490,12 +488,7 @@ impl S3Sync {
             .content_type("application/octet-stream")
             .send()
             .await
-            .map_err(|e| {
-                StoreError::Io(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("S3 upload failed: {e}"),
-                ))
-            })?;
+            .map_err(|e| StoreError::Io(std::io::Error::other(format!("S3 upload failed: {e}"))))?;
 
         Ok(())
     }
@@ -511,17 +504,16 @@ impl S3Sync {
             .send()
             .await
             .map_err(|e| {
-                StoreError::Io(std::io::Error::new(
-                    std::io::ErrorKind::Other,
-                    format!("S3 download failed for {relative_path}: {e}"),
-                ))
+                StoreError::Io(std::io::Error::other(format!(
+                    "S3 download failed for {relative_path}: {e}"
+                )))
             })?;
 
         let bytes = resp
             .body
             .collect()
             .await
-            .map_err(|e| StoreError::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))?
+            .map_err(|e| StoreError::Io(std::io::Error::other(e)))?
             .into_bytes();
 
         let size = bytes.len() as u64;

@@ -187,7 +187,7 @@ func (c *Client) sendRequestWithFlags(ctx context.Context, msgType uint16, flags
 	if err := c.conn.SetDeadline(deadline); err != nil {
 		return nil, fmt.Errorf("set deadline: %w", err)
 	}
-	defer c.conn.SetDeadline(time.Time{}) // Clear deadline
+	defer func() { _ = c.conn.SetDeadline(time.Time{}) }() // Clear deadline
 
 	reqID := c.reqID.Add(1)
 

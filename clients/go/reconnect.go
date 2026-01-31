@@ -108,14 +108,6 @@ func WithOnReconnect(fn func(sessionID uint64)) ReconnectOption {
 	}
 }
 
-// withDialFunc sets a custom dial function (for testing).
-// This is not exported as it's only intended for internal testing.
-func withDialFunc(fn DialFunc) ReconnectOption {
-	return func(rc *ReconnectingClient) {
-		rc.dialFunc = fn
-	}
-}
-
 // DialReconnecting creates a client with automatic reconnection and request queuing.
 // Operations that fail due to connection errors are automatically retried after reconnection.
 func DialReconnecting(addr string, ropts []ReconnectOption, opts ...Option) (*ReconnectingClient, error) {

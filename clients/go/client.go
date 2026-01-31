@@ -225,7 +225,7 @@ func (c *Client) sendHello(clientTag string) error {
 	if err := c.conn.SetDeadline(time.Now().Add(c.timeout)); err != nil {
 		return fmt.Errorf("set deadline: %w", err)
 	}
-	defer c.conn.SetDeadline(time.Time{})
+	defer func() { _ = c.conn.SetDeadline(time.Time{}) }()
 
 	reqID := c.reqID.Add(1)
 	if err := c.writeFrame(msgHello, reqID, payload.Bytes()); err != nil {
@@ -276,7 +276,7 @@ func (c *Client) sendRequest(ctx context.Context, msgType uint16, payload []byte
 	if err := c.conn.SetDeadline(deadline); err != nil {
 		return nil, fmt.Errorf("set deadline: %w", err)
 	}
-	defer c.conn.SetDeadline(time.Time{}) // Clear deadline
+	defer func() { _ = c.conn.SetDeadline(time.Time{}) }() // Clear deadline
 
 	reqID := c.reqID.Add(1)
 

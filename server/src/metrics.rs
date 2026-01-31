@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::collections::{HashMap, HashSet, VecDeque};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
@@ -26,6 +26,7 @@ pub struct ClientSession {
 }
 
 /// Tracks connected client sessions and their metadata.
+#[derive(Default)]
 pub struct SessionTracker {
     sessions: RwLock<HashMap<u64, ClientSession>>,
     context_to_session: RwLock<HashMap<u64, u64>>,
@@ -831,7 +832,7 @@ fn alpha(dt: f64, window_seconds: f64) -> f64 {
     1.0 - (-dt / window_seconds).exp()
 }
 
-fn disk_space_for_path(path: &PathBuf) -> (u64, u64) {
+fn disk_space_for_path(path: &Path) -> (u64, u64) {
     let disks = Disks::new_with_refreshed_list();
     let mut best_match: Option<(u64, u64, usize)> = None;
     for disk in disks.list() {

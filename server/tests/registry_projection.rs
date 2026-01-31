@@ -52,10 +52,11 @@ fn registry_ingest_and_project() {
         .get_type_version("com.example.Message", 1)
         .expect("descriptor");
 
-    let mut map = Vec::new();
-    map.push((Value::Integer(1.into()), Value::Integer(2.into())));
-    map.push((Value::Integer(2.into()), Value::String("hello".into())));
-    map.push((Value::Integer(9.into()), Value::Integer(42.into())));
+    let map = vec![
+        (Value::Integer(1.into()), Value::Integer(2.into())),
+        (Value::Integer(2.into()), Value::String("hello".into())),
+        (Value::Integer(9.into()), Value::Integer(42.into())),
+    ];
     let value = Value::Map(map);
 
     let mut buf = Vec::new();

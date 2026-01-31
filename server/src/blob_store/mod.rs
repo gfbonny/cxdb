@@ -44,12 +44,14 @@ impl BlobStore {
 
         let pack_file = OpenOptions::new()
             .create(true)
+            .truncate(true)
             .read(true)
             .write(true)
             .open(&pack_path)?;
 
         let idx_file = OpenOptions::new()
             .create(true)
+            .truncate(true)
             .read(true)
             .write(true)
             .open(&idx_path)?;

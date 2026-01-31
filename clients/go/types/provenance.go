@@ -7,7 +7,6 @@ package types
 import (
 	"os"
 	"os/user"
-	"path/filepath"
 	"runtime"
 	"time"
 
@@ -336,16 +335,4 @@ func getHostname() string {
 		return ""
 	}
 	return h
-}
-
-// getExecutableName returns the base name of the current executable.
-func getExecutableName() string {
-	exe, err := os.Executable()
-	if err != nil {
-		if len(os.Args) > 0 {
-			return filepath.Base(os.Args[0])
-		}
-		return ""
-	}
-	return filepath.Base(exe)
 }

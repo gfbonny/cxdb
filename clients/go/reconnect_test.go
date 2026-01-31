@@ -267,14 +267,6 @@ func (d *mockDialer) resetDialCount() {
 	d.dialCount = 0
 }
 
-func (d *mockDialer) resetAll() {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	d.dialCount = 0
-	d.sessionIDSeq = 0
-	d.failUntil = 0
-}
-
 func (d *mockDialer) setFailUntil(n int) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -426,7 +418,7 @@ func TestReconnectingClient_QueueFull(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		rc.CreateContext(ctx, 0) // This will block/timeout
+		_, _ = rc.CreateContext(ctx, 0) // This will block/timeout
 	}()
 
 	// Give time for first request to be picked up
