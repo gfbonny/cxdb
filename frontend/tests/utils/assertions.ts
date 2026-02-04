@@ -107,7 +107,8 @@ export async function expectDebuggerError(page: Page, errorText?: string): Promi
  * The UI uses URL-based routing: /c/{contextId} for contexts.
  */
 export async function addContext(page: Page, contextId: string | number): Promise<void> {
-  await page.goto(`/c/${contextId}`);
+  // Navigate to the context URL and wait for network to be idle
+  await page.goto(`/c/${contextId}`, { waitUntil: 'networkidle' });
 }
 
 /**
